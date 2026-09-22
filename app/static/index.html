@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reels Lab</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎞️</text></svg>">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <h1>Reels Lab</h1>
+    <span id="demo-badge" class="badge badge-demo hidden">מצב הדגמה</span>
+  </div>
+  <div class="topbar-actions">
+    <span id="session-state" class="session-state">בודק חיבור…</span>
+    <button id="sync-all" class="btn" type="button">סנכרן הכל</button>
+    <button id="open-settings" class="btn btn-ghost" type="button">הגדרות</button>
+    <button id="toggle-theme" class="btn btn-ghost" type="button" aria-label="החלף ערכת נושא">מצב תצוגה</button>
+    <button id="logout" class="btn btn-ghost hidden" type="button">התנתק</button>
+  </div>
+</header>
+
+<div id="job-strip" class="job-strip hidden"></div>
+
+<main class="layout">
+  <aside class="sidebar">
+    <section class="panel">
+      <h2 class="panel-title">חשבונות במעקב</h2>
+      <form id="add-account-form" class="add-account">
+        <input id="add-account-input" type="text" placeholder="שם משתמש באינסטגרם" autocomplete="off" spellcheck="false">
+        <button class="btn btn-primary" type="submit">הוסף</button>
+      </form>
+      <nav id="account-list" class="account-list"></nav>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">סינון מתקדם</h2>
+      <div class="field">
+        <label for="f-min-views">מינימום צפיות</label>
+        <input id="f-min-views" type="number" min="0" step="1000" placeholder="ללא">
+      </div>
+      <div class="field">
+        <label for="f-min-likes">מינימום לייקים</label>
+        <input id="f-min-likes" type="number" min="0" step="100" placeholder="ללא">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-min-duration">אורך מינ׳ (שנ׳)</label>
+          <input id="f-min-duration" type="number" min="0" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="f-max-duration">אורך מקס׳ (שנ׳)</label>
+          <input id="f-max-duration" type="number" min="0" step="1" placeholder="ללא">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-since">מתאריך</label>
+          <input id="f-since" type="date">
+        </div>
+        <div class="field">
+          <label for="f-until">עד תאריך</label>
+          <input id="f-until" type="date">
+        </div>
+      </div>
+      <label class="checkbox">
+        <input id="f-include-hidden" type="checkbox">
+        <span>הצג גם סרטונים מוסתרים</span>
+      </label>
+      <button id="reset-filters" class="btn btn-ghost btn-block" type="button">נקה סינון</button>
+    </section>
+  </aside>
+
+  <section class="content">
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" data-tab="reels" role="tab" type="button">סרטונים</button>
+      <button class="tab" data-tab="stats" role="tab" type="button">סטטיסטיקה</button>
+      <button class="tab" data-tab="activity" role="tab" type="button">פעילות</button>
+    </div>
+
+    <div id="tab-reels" class="tab-panel">
+      <div class="toolbar">
+        <div class="chips" id="status-chips">
+          <button class="chip is-active" data-status="all" type="button">הכל</button>
+          <button class="chip" data-status="unseen" type="button">לא נצפו</button>
+          <button class="chip" data-status="seen" type="button">נצפו</button>
+          <button class="chip" data-status="favorites" type="button">מועדפים</button>
+          <button class="chip" data-status="rated" type="button">מדורגים</button>
+          <button class="chip" data-status="hidden" type="button">מוסתרים</button>
+        </div>
+        <div class="toolbar-right">
+          <input id="search" type="search" placeholder="חיפוש בכיתוב / מוזיקה" autocomplete="off">
+          <select id="sort" aria-label="מיון">
+            <option value="newest">החדשים ביותר</option>
+            <option value="oldest">הישנים ביותר</option>
+            <option value="discovered">לפי סדר גילוי</option>
+            <option value="views">הכי הרבה צפיות</option>
+            <option value="views_asc">הכי מעט צפיות</option>
+            <option value="likes">הכי הרבה לייקים</option>
+            <option value="comments">הכי הרבה תגובות</option>
+            <option value="engagement">אחוז מעורבות</option>
+            <option value="hidden_gems">פנינים נסתרות</option>
+            <option value="shortest">הקצרים ביותר</option>
+            <option value="longest">הארוכים ביותר</option>
+            <option value="rating">לפי דירוג שלי</option>
+            <option value="random">אקראי</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="subbar">
+        <span id="result-count" class="result-count"></span>
+        <div class="subbar-actions">
+          <button id="play-unseen" class="btn btn-primary" type="button">נגן את כל מה שלא ראיתי</button>
+          <button id="mark-all-seen" class="btn btn-ghost" type="button">סמן את התוצאות כנצפו</button>
+          <button id="mark-all-unseen" class="btn btn-ghost" type="button">בטל סימון</button>
+          <a id="export-csv" class="btn btn-ghost" href="#" download>ייצוא CSV</a>
+        </div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+      <div id="grid-empty" class="empty hidden"></div>
+      <button id="load-more" class="btn btn-block hidden" type="button">טען עוד</button>
+    </div>
+
+    <div id="tab-stats" class="tab-panel hidden"></div>
+    <div id="tab-activity" class="tab-panel hidden"></div>
+  </section>
+</main>
+
+<!-- login -->
+<div id="login-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <div class="modal-card">
+    <h2 id="login-title">התחברות לאינסטגרם</h2>
+    <p class="muted">
+      פרטי ההתחברות נשלחים רק לשרת המקומי שרץ אצלך ומשמשים ליצירת session.
+      הסיסמה לא נשמרת בשום מקום — רק קובץ ה-session נשמר בתיקיית <code>data/</code>.
+    </p>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-username">שם משתמש</label>
+        <input id="login-username" type="text" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="login-password">סיסמה</label>
+        <input id="login-password" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="field">
+        <label for="login-2fa">קוד אימות דו-שלבי (אם יש)</label>
+        <input id="login-2fa" type="text" inputmode="numeric" autocomplete="one-time-code">
+      </div>
+      <div class="field">
+        <label for="login-challenge">קוד אתגר מהמייל/SMS (אם אינסטגרם ביקשה)</label>
+        <input id="login-challenge" type="text" inputmode="numeric">
+      </div>
+      <p id="login-error" class="error hidden"></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" type="submit">התחבר</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- settings -->
+<div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal-card">
+    <h2 id="settings-title">הגדרות</h2>
+    <div class="field">
+      <label for="s-blocked">מילות מפתח להסתרה (מופרדות בפסיק)</label>
+      <input id="s-blocked" type="text" placeholder="לדוגמה: פרסומת, giveaway">
+    </div>
+    <div class="field">
+      <label for="s-ratio">סימון "נצפה" אחרי אחוז צפייה</label>
+      <input id="s-ratio" type="range" min="0.1" max="1" step="0.05">
+      <span id="s-ratio-value" class="muted"></span>
+    </div>
+    <div class="field">
+      <label for="s-min-seconds">מינימום שניות צפייה לסימון</label>
+      <input id="s-min-seconds" type="number" min="0" max="120" step="1">
+    </div>
+    <label class="checkbox">
+      <input id="s-autoplay" type="checkbox">
+      <span>מעבר אוטומטי לסרטון הבא בסיום</span>
+    </label>
+    <div class="modal-actions">
+      <button id="settings-save" class="btn btn-primary" type="button">שמור</button>
+      <button class="btn btn-ghost" type="button" data-close-modal>סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- player -->
+<div id="player" class="player hidden" role="dialog" aria-modal="true">
+  <button id="player-close" class="player-close" type="button" aria-label="סגור">✕</button>
+  <button id="player-prev" class="player-nav player-prev" type="button" aria-label="הקודם">›</button>
+  <button id="player-next" class="player-nav player-next" type="button" aria-label="הבא">‹</button>
+  <div class="player-stage">
+    <video id="player-video" playsinline controls preload="metadata"></video>
+    <p id="player-fallback" class="player-fallback hidden"></p>
+  </div>
+  <aside class="player-side">
+    <div class="player-head">
+      <strong id="player-account"></strong>
+      <span id="player-date" class="muted"></span>
+    </div>
+    <p id="player-caption" class="player-caption"></p>
+    <dl id="player-stats" class="player-stats"></dl>
+    <div class="player-controls">
+      <button id="player-watched" class="btn" type="button">סמן כנצפה</button>
+      <button id="player-fav" class="btn btn-ghost" type="button">מועדף</button>
+      <button id="player-hide" class="btn btn-ghost" type="button">הסתר</button>
+    </div>
+    <div class="field">
+      <label for="player-rating">דירוג</label>
+      <div id="player-rating" class="rating" role="group" aria-label="דירוג"></div>
+    </div>
+    <div class="field">
+      <label for="player-note">הערה</label>
+      <textarea id="player-note" rows="3" placeholder="הערה פרטית לסרטון"></textarea>
+    </div>
+    <a id="player-link" class="btn btn-ghost btn-block" target="_blank" rel="noopener noreferrer">פתח באינסטגרם</a>
+    <p class="muted shortcuts">
+      קיצורים: רווח = נגן/עצור · → ← = הבא/הקודם · W = נצפה · F = מועדף · H = הסתר · Esc = סגירה
+    </p>
+  </aside>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
