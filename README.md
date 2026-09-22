@@ -121,15 +121,24 @@ IP מקומית ב-HTTP אין אפשרות כזו.
 מול השרת אנחנו קוראים לאותן נקודות קצה שהאתר של אינסטגרם עצמו קורא להן
 מדפדפן מחובר: `users/web_profile_info/` לפרופיל ו-`clips/user/` ל-Reels.
 
-### בנייה
+### התקנה
+
+ה-APK נבנה אוטומטית ב-GitHub Actions בכל דחיפה שנוגעת ב-`android/`, ומתפרסם
+כ-Release. הקובץ המוכן נמצא תמיד בעמוד
+[Releases](https://github.com/havivon/Inste/releases) — הורידו את
+`reels-lab.apk` ישירות מהפלאפון ופתחו אותו.
+
+אנדרואיד תבקש אישור להתקנה ממקור לא מוכר; זה צפוי בכל APK שלא הגיע מחנות.
+הריפו פרטי, אז הדפדפן בפלאפון צריך להיות מחובר לחשבון ה-GitHub שלכם.
+
+### בנייה מקומית
+
+לא חובה — רק אם רוצים לשנות קוד:
 
 1. פתחו את התיקייה `android/` ב-Android Studio (`Open`, לא `Import`).
-2. חכו שיסיים Gradle sync — הוא מוריד לבד את ה-SDK ואת הפלאגינים.
+2. חכו שיסיים Gradle sync.
 3. `Build ▸ Build Bundle(s) / APK(s) ▸ Build APK(s)`.
 4. ה-APK נוצר ב-`android/app/build/outputs/apk/debug/app-debug.apk`.
-
-העבירו לפלאפון ופתחו. אנדרואיד יבקש אישור להתקנה ממקור לא מוכר — צפוי ב-APK
-שלא הגיע מחנות.
 
 לפרויקט **אין אף תלות חיצונית** — לא AndroidX, לא ספריות רשת או תמונות. הכל
 נשען על ה-SDK בלבד (`HttpURLConnection`, `org.json`, `SQLiteOpenHelper`,
