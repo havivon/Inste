@@ -2,7 +2,10 @@
 <resources>
     <color name="plane">#0D0D0D</color>
     <color name="surface">#1A1A19</color>
+    <color name="surface_2">#222220</color>
     <color name="accent">#3987E5</color>
     <color name="ink">#FFFFFF</color>
     <color name="ink_secondary">#C3C2B7</color>
+    <color name="muted">#898781</color>
+    <color name="warning">#FAB219</color>
 </resources>

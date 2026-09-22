@@ -1,11 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Reels Lab</string>
-    <string name="setup_title">חיבור לשרת</string>
-    <string name="setup_body">הפעל על המחשב <b>python run.py --lan</b> והדבק כאן את הכתובת המלאה שהודפסה בטרמינל, כולל קוד הגישה.</string>
-    <string name="setup_hint">http://192.168.1.14:8777/?token=…</string>
-    <string name="connect">התחבר</string>
-    <string name="settings">שנה כתובת שרת</string>
-    <string name="bad_url">הכתובת צריכה להתחיל ב-http:// או https://</string>
-    <string name="load_failed">אין חיבור לשרת. ודא שהמחשב דולק, שהוא רץ עם ‎--lan ושהפלאפון על אותו Wi-Fi.</string>
+
+    <string name="login_notice">מתחברים בדף ההתחברות של אינסטגרם עצמה. האפליקציה לא רואה ולא שומרת את הסיסמה — רק את ה-session שנוצר.</string>
+    <string name="logged_in">ההתחברות הצליחה</string>
+    <string name="logout">התנתק</string>
+    <string name="logout_confirm">להתנתק ולמחוק את ה-session? הסרטונים והסימונים שנשמרו יישארו.</string>
+
+    <string name="add_account">+ חשבון</string>
+    <string name="add_account_title">הוספת חשבון למעקב</string>
+    <string name="add_account_hint">שם משתמש באינסטגרם</string>
+    <string name="all_accounts">כל החשבונות</string>
+    <string name="sync">סנכרן</string>
+    <string name="syncing">מסנכרן ברקע…</string>
+    <string name="sync_busy">סנכרון כבר רץ. המתן שיסתיים.</string>
+    <string name="sync_done">נמשכו %1$d סרטונים, מתוכם %2$d חדשים</string>
+    <string name="fetching">מושך את @%1$s…</string>
+
+    <string name="search_hint">חיפוש בכיתוב או במוזיקה</string>
+    <string name="badge_new">חדש</string>
+    <string name="mark_all_seen">סמן הכל כנצפה</string>
+    <string name="mark_all_confirm">לסמן %1$d סרטונים כנצפו? כך מתחילים לעקוב מנקודה נקייה.</string>
+    <string name="status_line">%1$s תוצאות · %2$s לא נצפו</string>
+    <string name="empty_no_accounts">הוסף חשבון כדי להתחיל.</string>
+    <string name="empty_no_matches">אין סרטונים שתואמים את הסינון.</string>
+
+    <string name="mark_watched">סמן כנצפה</string>
+    <string name="mark_unwatched">בטל סימון</string>
+    <string name="open_in_instagram">פתח באינסטגרם</string>
+    <string name="swipe_hint">החלקה למעלה = הבא · למטה = הקודם · הקשה = נגן/עצור · לחיצה ארוכה ברשת = מועדף</string>
+    <string name="loading">טוען…</string>
+    <string name="refreshing_link">הקישור פג, מרענן…</string>
+    <string name="video_unavailable">לא ניתן לנגן את הסרטון. נסה לסנכרן את החשבון מחדש.</string>
+    <string name="end_of_list">זה הסוף של הרשימה</string>
+
+    <string name="add">הוסף</string>
+    <string name="cancel">ביטול</string>
+    <string name="ok">אישור</string>
 </resources>

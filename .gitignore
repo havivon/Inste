@@ -6,7 +6,8 @@ env/
 
 # Local state: the SQLite database, cached covers and - most importantly -
 # the Instagram session file. Never commit any of it.
-data/
+# Anchored: an unanchored "data/" would also swallow the app's data packages.
+/data/
 *.db
 *.db-wal
 *.db-shm
