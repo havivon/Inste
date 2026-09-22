@@ -45,6 +45,51 @@ object IgApi {
     }
 
     /**
+     * The accounts the signed-in user follows, so they can be picked from a
+     * list instead of typed in one handle at a time.
+     */
+    fun following(session: IgSession, limit: Int = 200): List<Account> {
+        val me = session.userId
+        if (me.isEmpty()) throw IgApiException("לא זוהה המשתמש המחובר. התחבר מחדש.")
+
+        val accounts = mutableListOf<Account>()
+        var maxId: String? = null
+
+        while (accounts.size < limit) {
+            val cursor = maxId
+            val url = buildString {
+                append(IgSession.ORIGIN).append("/api/v1/friendships/").append(me)
+                append("/following/?count=50")
+                if (!cursor.isNullOrEmpty()) {
+                    append("&max_id=").append(URLEncoder.encode(cursor, "UTF-8"))
+                }
+            }
+            val root = JSONObject(get(session, url))
+            val users = root.optJSONArray("users") ?: break
+            if (users.length() == 0) break
+
+            for (index in 0 until users.length()) {
+                val user = users.optJSONObject(index) ?: continue
+                val username = user.optString("username")
+                if (username.isEmpty()) continue
+                accounts += Account(
+                    pk = user.optString("pk").ifEmpty { user.optString("id") },
+                    username = username,
+                    fullName = user.optString("full_name"),
+                    isPrivate = user.optBoolean("is_private"),
+                    profilePicUrl = user.optString("profile_pic_url"),
+                )
+            }
+
+            val next = root.optString("next_max_id")
+            if (next.isEmpty()) break
+            maxId = next
+            Thread.sleep(1_500)
+        }
+        return accounts
+    }
+
+    /**
      * One page of an account's reels. [maxId] comes from the previous page;
      * null starts from the newest.
      */

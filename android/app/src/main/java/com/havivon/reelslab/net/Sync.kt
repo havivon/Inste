@@ -40,6 +40,39 @@ object Sync {
         }
     }
 
+    /** Loads the signed-in user's following list for the account picker. */
+    fun following(context: Context, onDone: (List<Account>, String?) -> Unit) {
+        val appContext = context.applicationContext
+        running = true
+        executor.execute {
+            var accounts: List<Account> = emptyList()
+            var error: String? = null
+            try {
+                accounts = IgApi.following(IgSession(appContext))
+            } catch (failure: Exception) {
+                error = failure.message ?: failure.javaClass.simpleName
+            }
+            running = false
+            main.post { onDone(accounts, error) }
+        }
+    }
+
+    /** Adds several already-resolved accounts, one after another. */
+    fun addAll(context: Context, accounts: List<Account>, pages: Int, onDone: (SyncOutcome) -> Unit) {
+        submit(context, onDone) { session, db ->
+            var fetched = 0
+            var fresh = 0
+            for (account in accounts) {
+                db.upsertAccount(account)
+                val outcome = fetchPages(session, db, account, pages)
+                fetched += outcome.fetched
+                fresh += outcome.fresh
+                pace()
+            }
+            SyncOutcome(fetched = fetched, fresh = fresh)
+        }
+    }
+
     fun syncAccount(context: Context, account: Account, pages: Int, onDone: (SyncOutcome) -> Unit) {
         submit(context, onDone) { session, db ->
             fetchPages(session, db, account, pages)

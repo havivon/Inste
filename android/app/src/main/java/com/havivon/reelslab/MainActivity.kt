@@ -210,7 +210,57 @@ class MainActivity : Activity() {
         )
     }
 
+    /** Offers the accounts already followed, and typing a handle as a fallback. */
     private fun promptForAccount() {
+        if (Sync.running) {
+            toast(getString(R.string.sync_busy))
+            return
+        }
+        toast(getString(R.string.loading_following))
+        Sync.following(this) { followed, error ->
+            when {
+                error != null -> {
+                    toast(error)
+                    promptManualEntry()
+                }
+                followed.isEmpty() -> promptManualEntry()
+                else -> showFollowingPicker(followed)
+            }
+        }
+    }
+
+    private fun showFollowingPicker(followed: List<Account>) {
+        val known = accounts.map { it.pk }.toSet()
+        val candidates = followed.filter { it.pk !in known }
+        if (candidates.isEmpty()) {
+            toast(getString(R.string.all_following_added))
+            promptManualEntry()
+            return
+        }
+
+        val labels = candidates.map { account ->
+            if (account.fullName.isBlank()) "@${account.username}"
+            else "@${account.username} · ${account.fullName}"
+        }.toTypedArray()
+        val checked = BooleanArray(candidates.size)
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.pick_following, candidates.size))
+            .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
+                checked[which] = isChecked
+            }
+            .setPositiveButton(R.string.add) { _, _ ->
+                val chosen = candidates.filterIndexed { index, _ -> checked[index] }
+                if (chosen.isEmpty()) return@setPositiveButton
+                toast(getString(R.string.fetching_many, chosen.size))
+                Sync.addAll(this, chosen, PAGES_PER_SYNC) { outcome -> onSyncDone(outcome) }
+            }
+            .setNeutralButton(R.string.type_manually) { _, _ -> promptManualEntry() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun promptManualEntry() {
         val input = EditText(this).apply {
             hint = getString(R.string.add_account_hint)
             setSingleLine()

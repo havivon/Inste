@@ -10,6 +10,11 @@
     <string name="add_account">+ חשבון</string>
     <string name="add_account_title">הוספת חשבון למעקב</string>
     <string name="add_account_hint">שם משתמש באינסטגרם</string>
+    <string name="loading_following">טוען את החשבונות שאתה עוקב אחריהם…</string>
+    <string name="pick_following">בחר מתוך %1$d חשבונות שאתה עוקב אחריהם</string>
+    <string name="all_following_added">כל מי שאתה עוקב אחריו כבר נמצא ברשימה</string>
+    <string name="type_manually">הקלד שם ידנית</string>
+    <string name="fetching_many">מושך %1$d חשבונות ברקע. זה לוקח זמן — השאר את האפליקציה פתוחה.</string>
     <string name="all_accounts">כל החשבונות</string>
     <string name="sync">סנכרן</string>
     <string name="syncing">מסנכרן ברקע…</string>
