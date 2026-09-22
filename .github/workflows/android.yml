@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -39,9 +41,22 @@ jobs:
         working-directory: android
         run: gradle assembleDebug --no-daemon --stacktrace
 
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk reels-lab.apk
+
       - uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: reels-lab-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: reels-lab.apk
           if-no-files-found: error
+
+      # A release asset is a direct .apk link, so the phone can install it
+      # without unpacking an artifact zip first.
+      - name: Publish the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "apk-${{ github.run_number }}" reels-lab.apk \
+            --target "$GITHUB_SHA" \
+            --title "Reels Lab APK #${{ github.run_number }}" \
+            --notes "Debug build of ${GITHUB_SHA:0:7}. Sideload it: Android will ask to allow installs from an unknown source."
