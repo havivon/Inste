@@ -582,6 +582,27 @@ video.addEventListener("ended", () => {
   if (state.settings.autoplay_next !== false) step(1);
 });
 
+// Touch navigation: swipe up for the next reel (as in Instagram), or sideways
+// along the reading direction - in RTL the next item lies to the left.
+const SWIPE_THRESHOLD = 60;
+let swipeOrigin = null;
+const stage = document.querySelector(".player-stage");
+
+stage.addEventListener("touchstart", (event) => {
+  const touch = event.changedTouches[0];
+  swipeOrigin = { x: touch.clientX, y: touch.clientY };
+}, { passive: true });
+
+stage.addEventListener("touchend", (event) => {
+  if (!swipeOrigin) return;
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - swipeOrigin.x;
+  const dy = touch.clientY - swipeOrigin.y;
+  swipeOrigin = null;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
+  step(Math.abs(dy) > Math.abs(dx) ? (dy < 0 ? 1 : -1) : (dx < 0 ? 1 : -1));
+}, { passive: true });
+
 /* -- stats -------------------------------------------------------------- */
 async function loadStats() {
   const account = state.filters.account;

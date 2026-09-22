@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import secrets
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -8,6 +9,7 @@ DATA_DIR = Path(os.environ.get("REELS_LAB_DATA") or BASE_DIR / "data")
 THUMB_DIR = DATA_DIR / "thumbs"
 DB_PATH = DATA_DIR / "reels.db"
 SESSION_PATH = DATA_DIR / "ig_session.json"
+TOKEN_PATH = DATA_DIR / "access_token.txt"
 
 DEMO_MODE = os.environ.get("REELS_LAB_DEMO") == "1"
 
@@ -40,3 +42,27 @@ ALLOWED_MEDIA_HOST_SUFFIXES = (".cdninstagram.com", ".fbcdn.net", ".instagram.co
 def ensure_dirs() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     THUMB_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def access_token() -> str:
+    """Shared secret for reaching the app from anything but this machine.
+
+    Loopback requests skip it, so the desktop stays friction-free; a phone on
+    the same Wi-Fi needs the token, because the running app holds a logged-in
+    Instagram session and would otherwise be open to the whole network.
+    """
+    from_env = os.environ.get("REELS_LAB_TOKEN", "").strip()
+    if from_env:
+        return from_env
+    ensure_dirs()
+    if TOKEN_PATH.exists():
+        existing = TOKEN_PATH.read_text(encoding="utf-8").strip()
+        if existing:
+            return existing
+    token = secrets.token_urlsafe(9)
+    TOKEN_PATH.write_text(token, encoding="utf-8")
+    try:
+        TOKEN_PATH.chmod(0o600)
+    except OSError:
+        pass
+    return token

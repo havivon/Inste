@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import secrets
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -10,6 +11,7 @@ import httpx
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import (
     FileResponse,
+    HTMLResponse,
     JSONResponse,
     PlainTextResponse,
     Response,
@@ -19,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import store, sync
-from .config import BASE_DIR, BROWSER_UA, DEMO_MODE
+from .config import BASE_DIR, BROWSER_UA, DEMO_MODE, access_token
 from .db import get_settings, init_db, save_settings
 from .instagram import InstagramError
 from .jobs import runner
@@ -37,6 +39,61 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Instagram Reels Lab", docs_url=None, redoc_url=None, lifespan=lifespan
 )
+
+TOKEN_COOKIE = "reels_lab_token"
+LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+TOKEN_PAGE = """<!DOCTYPE html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reels Lab</title>
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0d0d;
+color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:20px}
+form{background:#1a1a19;border:1px solid rgba(255,255,255,.1);border-radius:12px;
+padding:24px;width:min(360px,100%)}
+h1{font-size:17px;margin:0 0 6px}p{color:#c3c2b7;font-size:13px;margin:0 0 16px;line-height:1.6}
+input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:10px;
+border-radius:8px;border:1px solid rgba(255,255,255,.1);background:#0d0d0d;color:#fff}
+button{width:100%;font:inherit;font-size:14px;margin-top:12px;padding:10px;
+border:0;border-radius:8px;background:#3987e5;color:#fff;cursor:pointer}
+</style></head><body>
+<form method="get" action="/">
+<h1>Reels Lab</h1>
+<p>הזן את קוד הגישה שהודפס בטרמינל כשהפעלת את השרת.</p>
+<input name="token" type="text" autocomplete="off" autofocus placeholder="קוד גישה">
+<button type="submit">כניסה</button>
+</form></body></html>"""
+
+
+def _is_loopback(request: Request) -> bool:
+    return bool(request.client) and request.client.host in LOOPBACK_HOSTS
+
+
+def _token_matches(request: Request) -> bool:
+    expected = access_token()
+    supplied = request.query_params.get("token") or request.cookies.get(TOKEN_COOKIE, "")
+    return secrets.compare_digest(supplied, expected)
+
+
+@app.middleware("http")
+async def access_gate(request: Request, call_next):
+    """Requests from this machine pass; anything else needs the access token."""
+    if request.url.path == "/healthz" or _is_loopback(request):
+        return await call_next(request)
+    if not _token_matches(request):
+        if request.url.path.startswith("/api/"):
+            return JSONResponse({"detail": "נדרש קוד גישה"}, status_code=401)
+        return HTMLResponse(TOKEN_PAGE, status_code=401)
+    response = await call_next(request)
+    if request.query_params.get("token"):
+        response.set_cookie(
+            TOKEN_COOKIE,
+            access_token(),
+            max_age=60 * 60 * 24 * 30,
+            httponly=True,
+            samesite="lax",
+        )
+    return response
 
 
 @app.exception_handler(InstagramError)

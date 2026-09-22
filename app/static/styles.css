@@ -340,7 +340,7 @@ textarea { resize: vertical; }
   display: grid; grid-template-columns: minmax(0, 1fr) 330px;
   gap: 18px; padding: 24px;
 }
-.player-stage { display: grid; place-items: center; min-width: 0; }
+.player-stage { position: relative; display: grid; place-items: center; min-width: 0; }
 .player-stage video {
   max-width: 100%; max-height: calc(100vh - 48px);
   border-radius: var(--radius); background: #000;
@@ -367,10 +367,10 @@ textarea { resize: vertical; }
   border-radius: var(--radius); cursor: pointer; z-index: 2;
 }
 .player-nav:hover { background: rgba(255, 255, 255, 0.2); }
-/* Reading direction: "previous" sits toward the start of the strip (the right
-   edge in RTL), "next" beside the info panel. */
-.player-prev { inset-inline-start: 16px; }
-.player-next { inset-inline-end: 360px; }
+/* Reading direction: "previous" sits toward the start of the strip - the
+   right edge in RTL - and "next" toward the end. */
+.player-prev { inset-inline-start: 8px; }
+.player-next { inset-inline-end: 8px; }
 .rating { display: flex; gap: 4px; }
 .rating button {
   font: inherit; font-size: 18px; line-height: 1; background: none;
@@ -395,7 +395,8 @@ textarea { resize: vertical; }
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; order: 2; }
   .content { order: 1; }
-  .player { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
-  .player-prev, .player-next { display: none; }
+  .player { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; padding: 12px; }
+  .player-nav { width: 40px; height: 48px; font-size: 24px; }
   .player-stage video { max-height: 52vh; }
+  .shortcuts { display: none; }
 }
